@@ -1,0 +1,12 @@
+[project]
+name = "yadro-applied-ai"
+version = "0.1.0"
+description = "URL Alias Service - Cервис преобразования длинных URL в короткие уникальные URL"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "alembic>=1.16.1",
+    "asyncpg>=0.30.0",
+    "fastapi[all]>=0.115.12",
+    "sqlalchemy[asyncio]>=2.0.41",
+]

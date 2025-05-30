@@ -1,0 +1,1 @@
+from utils.settings import DBSettings as config
