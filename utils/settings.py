@@ -10,11 +10,11 @@ class SettingsBase(BaseSettings):
 
 
 class Settings(SettingsBase):
-    model_config = SettingsConfigDict(env_prefix="DB_") 
+    model_config = SettingsConfigDict(env_prefix="POSTGRES_") 
 
     HOST: str = Field('localhost')
     PORT: int = Field(5432)
-    NAME: str = Field('postgres')
+    DB: str = Field('postgres')
     USER: str = Field('user')
     PASSWORD: str = Field('password')
 
@@ -26,7 +26,7 @@ class Settings(SettingsBase):
     
     @property
     def URL_Postgres(self):
-        return f"postgresql+asyncpg://{self.USER}:{self.PASSWORD}@{self.HOST}:{self.PORT}/{self.NAME}"
+        return f"postgresql+asyncpg://{self.USER}:{self.PASSWORD}@{self.HOST}:{self.PORT}/{self.DB}"
     
     @classmethod
     def load(cls) -> "Settings":
