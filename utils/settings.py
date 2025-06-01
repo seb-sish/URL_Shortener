@@ -9,7 +9,7 @@ class SettingsBase(BaseSettings):
                                       extra="ignore")
 
 
-class DBSettings(SettingsBase):
+class Settings(SettingsBase):
     model_config = SettingsConfigDict(env_prefix="DB_") 
 
     HOST: str = Field('localhost')
@@ -18,6 +18,8 @@ class DBSettings(SettingsBase):
     USER: str = Field('user')
     PASSWORD: str = Field('password')
 
+    DEBUG_SQL: bool = Field(False, description="Enable SQL debug mode")
+
     @property
     def URL_SQLite(self):
         return f"sqlite+aiosqlite:///./database.db"
@@ -25,3 +27,12 @@ class DBSettings(SettingsBase):
     @property
     def URL_Postgres(self):
         return f"postgresql+asyncpg://{self.USER}:{self.PASSWORD}@{self.HOST}:{self.PORT}/{self.NAME}"
+    
+    @classmethod
+    def load(cls) -> "Settings":
+        return cls()
+    
+config = Settings.load()
+
+if __name__ == '__main__':
+    print(config)
