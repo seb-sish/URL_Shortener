@@ -23,4 +23,6 @@ async def check_expired(link: models.Link) -> bool:
     """
     if link.expired_at is None:
         return False
-    return link.expired_at < datetime.datetime.now(datetime.timezone.utc)
+    exp_t = link.expired_at.replace(tzinfo=datetime.timezone.utc)
+    cur_t = datetime.datetime.now(datetime.timezone.utc)
+    return exp_t < cur_t
