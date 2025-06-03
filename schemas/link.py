@@ -4,7 +4,7 @@ from sqlalchemy import false
 
 
 class LinkCreateSchema(BaseModel):
-    original_link: str
+    original_link: HttpUrl
     expire_days: int | None = None
     
 
@@ -13,7 +13,6 @@ class LinkGetSchema(BaseModel):
     link: str
     original_link: HttpUrl
     activated: bool
-    expired: bool = False
     created_at: datetime
     expired_at: datetime | None 
     owner_id: int

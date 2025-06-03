@@ -1,19 +1,17 @@
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import RedirectResponse
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from typing import Annotated
 
-from database import models, get_session
+from database import models
 from schemas import *
 
-SessionDep = Annotated[AsyncSession, Depends(get_session)]
+from utils import check_expired
+from api.dependenses import SessionDep
 
 publicRouter = APIRouter(
     prefix="",
     tags=["link"],
-    responses={404: {"detail": "Url not found"}},
-    dependencies=[Depends(get_session)]
+    responses={404: {"detail": "Url not found"}}
 )
 
 @publicRouter.get("/{url_key}")
@@ -27,7 +25,7 @@ async def forward_to_target_url(
             .filter(models.Link.link == url_key)
         )).scalar_one_or_none()
 
-    if db_url:
+    if db_url and db_url.activated and not await check_expired(db_url):
         return RedirectResponse(db_url.original_link)
     else:
         raise HTTPException(

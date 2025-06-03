@@ -9,9 +9,9 @@ app.add_middleware(
     allow_origins=["*"]
 )
 
-app.include_router(publicRouter)
 app.include_router(privateRouter)
 app.include_router(authRouter)
+app.include_router(publicRouter)
 register_exception_handlers(app)
 
 if __name__ == "__main__":

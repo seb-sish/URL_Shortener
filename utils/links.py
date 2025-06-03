@@ -2,6 +2,7 @@ from random import randint
 from sqlalchemy import select
 from database import models
 from sqlalchemy.ext.asyncio import AsyncSession
+import datetime
 import secrets
 import string
 
@@ -16,3 +17,10 @@ async def generate_short_link(original_url: str, db_session: AsyncSession) -> st
     else:
         return await generate_short_link(original_url, db_session)
 
+async def check_expired(link: models.Link) -> bool:
+    """
+    Check if the given link has expired.
+    """
+    if link.expired_at is None:
+        return False
+    return link.expired_at < datetime.datetime.now(datetime.timezone.utc)
