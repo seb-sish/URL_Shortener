@@ -1,4 +1,4 @@
-from fastapi import APIRouter
-
-public_router = APIRouter()
-private_router = APIRouter()
+from api.public import publicRouter
+from api.private import privateRouter
+from api.auth import authRouter
+from api.exceptions_handlers import register_exception_handlers
