@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import RedirectResponse
 from sqlalchemy import select
 
@@ -15,12 +15,13 @@ publicRouter = APIRouter(
     responses={404: {"detail": "Url not found"}}
 )
 
+
 @publicRouter.get("/{url_key}")
 async def forward_to_target_url(
-        url_key: str,
-        request: Request,
-        session: SessionDep
-    ):
+    url_key: str,
+    request: Request,
+    session: SessionDep
+):
     url_key = url_key.strip().upper()
     async with session as db_session:
         db_url = (await db_session.execute(

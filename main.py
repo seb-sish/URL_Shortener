@@ -1,9 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from api import (
-    publicRouter, privateRouter, authRouter, adminRouter, 
+    publicRouter, privateRouter, authRouter, adminRouter,
     register_exception_handlers
-    )
+)
 
 app = FastAPI()
 

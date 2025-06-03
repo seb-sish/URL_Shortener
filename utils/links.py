@@ -7,16 +7,19 @@ import datetime
 import secrets
 import string
 
+
 async def generate_short_link(original_url: str, db_session: AsyncSession) -> str:
     """
     Generate a short link for the given original URL.
     """
-    short_link = "".join(secrets.choice(string.ascii_uppercase + string.digits) for _ in range(randint(5, 10)))
+    short_link = "".join(secrets.choice(
+        string.ascii_uppercase + string.digits) for _ in range(randint(5, 10)))
     r = (await db_session.execute(select(models.Link).filter(models.Link.link == short_link))).scalar_one_or_none()
     if not r:
         return short_link
     else:
         return await generate_short_link(original_url, db_session)
+
 
 async def check_expired(link: models.Link) -> bool:
     """
@@ -27,6 +30,7 @@ async def check_expired(link: models.Link) -> bool:
     exp_t = link.expired_at.replace(tzinfo=datetime.timezone.utc)
     cur_t = datetime.datetime.now(datetime.timezone.utc)
     return exp_t < cur_t
+
 
 async def add_click(link: models.Link, request: Request, db_session: AsyncSession) -> None:
     """
@@ -40,6 +44,7 @@ async def add_click(link: models.Link, request: Request, db_session: AsyncSessio
     db_session.add(click)
     await db_session.commit()
 
+
 async def get_link_stats(link: models.Link, db_session: AsyncSession) -> dict:
     """
     Get statistics for the given link.
@@ -49,7 +54,7 @@ async def get_link_stats(link: models.Link, db_session: AsyncSession) -> dict:
         "last_day_clicks": 0,
         "last_week_clicks": 0
     }
-    
+
     now = datetime.datetime.now(datetime.timezone.utc)
     # all_clicks = await db_session.execute(
     #     select(models.Click).filter(models.Click.link_id == link.id)

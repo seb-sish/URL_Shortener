@@ -1,3 +1,4 @@
+from utils import config, hash_password
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import (
     AsyncConnection,
@@ -8,15 +9,16 @@ from sqlalchemy.ext.asyncio import (
 import contextlib
 from typing import Any, AsyncIterator
 
-import sys, os
+import sys
+import os
 sys.path.append(os.path.join(sys.path[0], '..'))
 
-from utils import config, hash_password
 
 class DatabaseSessionManager:
     def __init__(self, host: str, engine_kwargs: dict[str, Any] = {}):
         self._engine = create_async_engine(host, **engine_kwargs)
-        self._sessionmaker = async_sessionmaker(autocommit=False, bind=self._engine, expire_on_commit=False)
+        self._sessionmaker = async_sessionmaker(
+            autocommit=False, bind=self._engine, expire_on_commit=False)
 
     async def close(self):
         if self._engine is None:
@@ -53,12 +55,14 @@ class DatabaseSessionManager:
             await session.close()
 
 
-sessionmanager = DatabaseSessionManager(config.URL_Postgres, {"echo": config.DEBUG_SQL})
+sessionmanager = DatabaseSessionManager(
+    config.URL_Postgres, {"echo": config.DEBUG_SQL})
 
 
 async def get_session():
     async with sessionmanager.session() as session:
         yield session
+
 
 async def test_connection():
     from database import models
@@ -68,9 +72,11 @@ async def test_connection():
         print("Connection successful!")
 
         from database.models import User, Link
-        session.add(User(username="sebsish", email="se6sish@gmail.com", password=hash_password("43811090")))
+        session.add(User(username="sebsish", email="se6sish@gmail.com",
+                    password=hash_password("43811090")))
         await session.commit()
-        session.add(Link(original_link="https://www.youtube.com/watch?v=dQw4w9WgXcQ&pp=ygUIcmlja3JvbGw%3D", link="RICKROLL", owner_id=1,))
+        session.add(Link(
+            original_link="https://www.youtube.com/watch?v=dQw4w9WgXcQ&pp=ygUIcmlja3JvbGw%3D", link="RICKROLL", owner_id=1,))
         await session.commit()
 
 if __name__ == "__main__":

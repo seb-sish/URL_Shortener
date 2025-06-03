@@ -3,7 +3,7 @@ from fastapi import HTTPException, status
 from schemas import *
 
 from api.dependencies import (
-    SessionDep, CredentialsDep, UserDep, 
+    SessionDep, CredentialsDep, UserDep,
     get_user, authenticate_user, create_user)
 
 authRouter = APIRouter(
@@ -14,6 +14,7 @@ authRouter = APIRouter(
         404: {"detail": "Not found"}
     }
 )
+
 
 @authRouter.post("/register", response_model=UserGetSchema)
 async def register(
@@ -30,7 +31,7 @@ async def register(
         if not user:
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                                 detail="Failed to create user")
-        
+
         response.status_code = status.HTTP_201_CREATED
         response.headers["Authorization"] = "Basic"
         return UserGetSchema.model_validate(user)
@@ -45,7 +46,8 @@ async def login(
         db_session, credentials
     )
     return UserGetSchema.model_validate(user)
-    
+
+
 @authRouter.get("/me")
 async def get_info_about_me(
     user: UserDep

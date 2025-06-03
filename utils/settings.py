@@ -1,16 +1,17 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import Field
 
+
 class SettingsBase(BaseSettings):
-    model_config = SettingsConfigDict(env_file='.env', 
+    model_config = SettingsConfigDict(env_file='.env',
                                       env_file_encoding='utf-8',
-                                    #   case_sensitive=False,
+                                      #   case_sensitive=False,
                                       env_ignore_empty=True,
                                       extra="ignore")
 
 
 class Settings(SettingsBase):
-    model_config = SettingsConfigDict(env_prefix="POSTGRES_") 
+    model_config = SettingsConfigDict(env_prefix="POSTGRES_")
 
     HOST: str = Field('localhost')
     PORT: int = Field(5432)
@@ -23,15 +24,16 @@ class Settings(SettingsBase):
     @property
     def URL_SQLite(self):
         return f"sqlite+aiosqlite:///./database.db"
-    
+
     @property
     def URL_Postgres(self):
         return f"postgresql+asyncpg://{self.USER}:{self.PASSWORD}@{self.HOST}:{self.PORT}/{self.DB}"
-    
+
     @classmethod
     def load(cls) -> "Settings":
         return cls()
-    
+
+
 config = Settings.load()
 
 if __name__ == '__main__':
