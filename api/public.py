@@ -7,6 +7,7 @@ from schemas import *
 
 from utils import check_expired
 from api.dependenses import SessionDep
+from utils.links import add_click
 
 publicRouter = APIRouter(
     prefix="",
@@ -17,6 +18,7 @@ publicRouter = APIRouter(
 @publicRouter.get("/{url_key}")
 async def forward_to_target_url(
         url_key: str,
+        request: Request,
         session: SessionDep
     ):
     url_key = url_key.strip().upper()
@@ -42,4 +44,5 @@ async def forward_to_target_url(
             detail="Url is expired"
         )
 
+    await add_click(db_url, request, db_session)
     return RedirectResponse(db_url.original_link)

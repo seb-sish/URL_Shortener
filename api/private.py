@@ -8,7 +8,7 @@ from typing import Annotated, List
 import datetime
 from database import models, get_session
 from schemas.link import LinkGetStatusSchema
-from utils import generate_short_link, check_expired
+from utils import generate_short_link, check_expired, get_link_stats
 from schemas import *
 
 from api.dependenses import SessionDep, UserDep
@@ -109,3 +109,26 @@ async def update_short_link_status(
     await session.commit()
     await session.refresh(db_link)
     return LinkGetSchema.model_validate(db_link)
+
+@privateRouter.get("/{url_key}/stats")
+async def get_short_link_stats(
+        url_key: str,
+        user: UserDep,
+        session: SessionDep
+    ) -> LinkGetSchemaWithStats:
+    """
+    Get the statistics of a short link for the given URL key.
+    """
+    url_key = url_key.strip().upper()
+    db_link = (await session.execute(
+        select(models.Link).where(models.Link.link == url_key)
+    )).scalar_one_or_none()
+    if not db_link:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Link not found")
+    elif db_link.owner_id != user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You do not have permission to access this link")
+
+    stats = LinkGetSchemaWithStats.model_validate(db_link)
+    stats.last_hours_clicks, stats.last_day_clicks, stats.last_week_clicks = (await get_link_stats(db_link, session)).values()
+    return stats
+    

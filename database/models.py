@@ -65,7 +65,7 @@ class Link(Base):
     activated: Mapped[bool] = mapped_column(server_default=expression.true(), nullable=False)
     expired_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
 
-class Clicks(Base):
+class Click(Base):
     __tablename__ = 'clicks'
 
     id: Mapped[int_pk]
