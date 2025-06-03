@@ -58,4 +58,20 @@ async def create_user(
     await db_session.refresh(user)
     return user
 
+async def user_is_admin(
+    db_session: SessionDep,
+    credentials: CredentialsDep
+) -> models.User | None: 
+    user = await get_user(db_session, credentials.username) 
+    if not user or not verify_password(credentials.password, user.password):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Invalid username or password",
+                    headers={"WWW-Authenticate": "Basic"})
+    elif not user.is_admin:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                    detail="You do not have permission to access this resource")
+    return user
+
+
 UserDep = Annotated[models.User, Depends(authenticate_user)]
+AdminDep = Annotated[models.User, Depends(user_is_admin)]

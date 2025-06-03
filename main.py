@@ -1,6 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from api import publicRouter, privateRouter, authRouter, register_exception_handlers
+from api import (
+    publicRouter, privateRouter, authRouter, adminRouter, 
+    register_exception_handlers
+    )
 
 app = FastAPI()
 
@@ -10,8 +13,9 @@ app.add_middleware(
 )
 
 app.include_router(privateRouter)
-app.include_router(authRouter)
 app.include_router(publicRouter)
+app.include_router(authRouter)
+app.include_router(adminRouter)
 register_exception_handlers(app)
 
 if __name__ == "__main__":
