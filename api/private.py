@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, status
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -42,7 +42,8 @@ async def my_short_links(
 async def create_short_link(
         url: LinkCreateSchema,
         user: UserDep,
-        session: SessionDep
+        session: SessionDep,
+        response: Response
     ) -> LinkGetSchema:
     """
     Create a short link for the given original URL.
@@ -58,7 +59,8 @@ async def create_short_link(
     session.add(new_link)
     await session.commit()
     await session.refresh(new_link)
- 
+    
+    response.status_code = status.HTTP_201_CREATED
     return new_link
 
 @privateRouter.get("/status")
