@@ -32,7 +32,7 @@ async def my_short_links(
     """
     Get account created short links.
     """
-
+    if limit > 100: limit = 100
     links = await session.execute(
         select(models.Link).filter(models.Link.owner_id == user.id).limit(limit).offset(offset)
     )
@@ -73,6 +73,7 @@ async def get_all_short_link_status(
     """
     Get the status of all short links for the authenticated user.
     """
+    if limit > 100: limit = 100
     db_links = (await session.execute(
         select(models.Link).filter(models.Link.owner_id == user.id).limit(limit).offset(offset)
     )).scalars().all()
@@ -90,6 +91,7 @@ async def get_all_short_link_stats(
     """
     Get the statistics of all short links for the authenticated user.
     """
+    if limit > 100: limit = 100
     db_links = (await session.execute(
         select(models.Link).filter(models.Link.owner_id == user.id).limit(limit).offset(offset)
     )).scalars().all()
