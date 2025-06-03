@@ -1,11 +1,18 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from api import publicRouter, privateRouter, authRouter, register_exception_handlers
+
 app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"]
 )
+
+app.include_router(publicRouter)
+app.include_router(privateRouter)
+app.include_router(authRouter)
+register_exception_handlers(app)
 
 if __name__ == "__main__":
     import uvicorn

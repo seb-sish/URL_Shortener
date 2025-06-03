@@ -1,5 +1,4 @@
 from datetime import datetime
-from math import exp
 from typing import Annotated, Optional
 from sqlalchemy import MetaData, ForeignKey, Text, func
 from sqlalchemy.orm import DeclarativeBase, relationship
@@ -51,7 +50,6 @@ class Link(Base):
 
     activated: Mapped[bool] = mapped_column(server_default=expression.true(), nullable=False)
     expired_at: Mapped[Optional[datetime]] = mapped_column(nullable=True)
-    expaired: Mapped[bool] = mapped_column(server_default=expression.false(), nullable=False)
 
 class Clicks(Base):
     __tablename__ = 'clicks'

@@ -1,3 +1,4 @@
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import (
     AsyncConnection,
     AsyncSession,
@@ -7,8 +8,7 @@ from sqlalchemy.ext.asyncio import (
 import contextlib
 from typing import Any, AsyncIterator
 
-import sys
-import os
+import sys, os
 sys.path.append(os.path.join(sys.path[0], '..'))
 
 from utils import config, hash_password
@@ -61,14 +61,16 @@ async def get_session():
         yield session
 
 async def test_connection():
-    async with get_session() as session:
-        result = await session.execute(text("SELECT * FROM users LIMIT 1"))
+    from database import models
+    async for session in get_session():
+        result = await session.execute(select(models.User.username).limit(1))
         print(result.scalar())
         print("Connection successful!")
 
         from database.models import User, Link
-        session.add(User(username="test_user", email="test_user@example.com", password=hash_password("securepassword")))
-        session.add(Link(original_link="https://google.com", link="EXMPL", owner_id=1,))
+        session.add(User(username="sebsish", email="se6sish@gmail.com", password=hash_password("43811090")))
+        await session.commit()
+        session.add(Link(original_link="https://www.youtube.com/watch?v=dQw4w9WgXcQ&pp=ygUIcmlja3JvbGw%3D", link="RICKROLL", owner_id=1,))
         await session.commit()
 
 if __name__ == "__main__":

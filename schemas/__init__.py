@@ -1,2 +1,2 @@
-from schemas.user import UserCreateSchema, UserGetSchema, UserLinksSchema
+from schemas.user import UserCreateSchema, UserGetSchema
 from schemas.link import LinkCreateSchema, LinkGetSchema
