@@ -1,11 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from typing import Annotated, List
 
-import datetime
+from datetime import datetime, timedelta, timezone
 from database import models, get_session
 from schemas.link import LinkGetStatusSchema
 from utils import generate_short_link, check_expired, get_link_stats
@@ -25,14 +25,16 @@ privateRouter = APIRouter(
 @privateRouter.get("")
 async def my_short_links(
         user: UserDep,
-        session: SessionDep
+        session: SessionDep,
+        limit: int = Query(50, ge=0),
+        offset: int = Query(0, ge=0)
     ) -> List[LinkGetSchema]:
     """
     Get account created short links.
     """
 
     links = await session.execute(
-        select(models.Link).where(models.Link.owner_id == user.id)
+        select(models.Link).filter(models.Link.owner_id == user.id).limit(limit).offset(offset)
     )
     return [LinkGetSchema.model_validate(i) for i in links.scalars().all()]
 
@@ -51,13 +53,46 @@ async def create_short_link(
         link=short_link,
         original_link=url.original_link,
         owner_id=user.id,
-        expired_at=datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=url.expire_days) if url.expire_days else None,
+        expired_at=datetime.now(timezone.utc) + timedelta(days=url.expire_days) if url.expire_days else None,
     )
     session.add(new_link)
     await session.commit()
     await session.refresh(new_link)
  
     return new_link
+
+@privateRouter.get("/status")
+async def get_all_short_link_status(
+        user: UserDep,
+        session: SessionDep,
+        limit: int = Query(50, ge=0),
+        offset: int = Query(0, ge=0)
+    ) -> List[LinkGetStatusSchema]:
+    """
+    Get the status of all short links for the authenticated user.
+    """
+    db_links = (await session.execute(
+        select(models.Link).filter(models.Link.owner_id == user.id).limit(limit).offset(offset)
+    )).scalars().all()
+    return [LinkGetStatusSchema(link=db_link.link, activated=db_link.activated, 
+                                expired=await check_expired(db_link), expired_at=db_link.expired_at) for db_link in db_links]
+
+
+@privateRouter.get("/stats")
+async def get_all_short_link_stats(
+        user: UserDep,
+        session: SessionDep,
+        limit: int = Query(50, ge=0),
+        offset: int = Query(0, ge=0)
+    ) -> List[LinkGetSchemaWithStats]:
+    """
+    Get the statistics of all short links for the authenticated user.
+    """
+    db_links = (await session.execute(
+        select(models.Link).filter(models.Link.owner_id == user.id).limit(limit).offset(offset)
+    )).scalars().all()
+
+    return [LinkGetSchemaWithStats.model_validate(db_link) for db_link in db_links]
 
 @privateRouter.get("/{url_key}/status")
 async def get_short_link_status(
@@ -70,7 +105,7 @@ async def get_short_link_status(
     """
     url_key = url_key.strip().upper()
     db_link = (await session.execute(
-        select(models.Link).where(models.Link.link == url_key)
+        select(models.Link).filter(models.Link.link == url_key)
     )).scalar_one_or_none()
     if not db_link:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Link not found")
@@ -91,7 +126,7 @@ async def update_short_link_status(
     """
     url_key = url_key.strip().upper()
     db_link = (await session.execute(
-        select(models.Link).where(models.Link.link == url_key)
+        select(models.Link).filter(models.Link.link == url_key)
     )).scalar_one_or_none()
 
     if not db_link:
@@ -121,7 +156,7 @@ async def get_short_link_stats(
     """
     url_key = url_key.strip().upper()
     db_link = (await session.execute(
-        select(models.Link).where(models.Link.link == url_key)
+        select(models.Link).filter(models.Link.link == url_key)
     )).scalar_one_or_none()
     if not db_link:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Link not found")
