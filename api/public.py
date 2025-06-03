@@ -19,16 +19,27 @@ async def forward_to_target_url(
         url_key: str,
         session: SessionDep
     ):
+    url_key = url_key.strip().upper()
     async with session as db_session:
         db_url = (await db_session.execute(
             select(models.Link)
             .filter(models.Link.link == url_key)
         )).scalar_one_or_none()
 
-    if db_url and db_url.activated and not await check_expired(db_url):
-        return RedirectResponse(db_url.original_link)
-    else:
+    if not db_url:
         raise HTTPException(
             status_code=404,
             detail="Url not found"
         )
+    elif not db_url.activated:
+        raise HTTPException(
+            status_code=404,
+            detail="Url is deactivated"
+        )
+    elif await check_expired(db_url):
+        raise HTTPException(
+            status_code=404,
+            detail="Url is expired"
+        )
+
+    return RedirectResponse(db_url.original_link)

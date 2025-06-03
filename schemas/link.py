@@ -1,6 +1,5 @@
 from datetime import datetime
 from pydantic import BaseModel, HttpUrl
-from sqlalchemy import false
 
 
 class LinkCreateSchema(BaseModel):
@@ -16,11 +15,18 @@ class LinkGetSchema(BaseModel):
     created_at: datetime
     expired_at: datetime | None 
     owner_id: int
+    class Config:
+        from_attributes = True
+    
 
+class LinkGetSchemaWithStats(LinkGetSchema):
     last_hours_clicks: int = 0
     last_day_clicks: int = 0
     last_week_clicks: int = 0
 
-    class Config:
-        from_attributes = True
-    
+class LinkGetStatusSchema(BaseModel):
+    link: str
+    activated: bool
+    expired: bool
+    expired_at: datetime | None = None
+
