@@ -97,7 +97,13 @@ async def get_all_me_short_link_stats(
         select(models.Link).filter(models.Link.owner_id == user.id).limit(limit).offset(offset)
     )).scalars().all()
 
-    return [LinkGetSchemaWithStats.model_validate(db_link) for db_link in db_links]
+    schemStats = []
+    for db_link in db_links:
+        stats = LinkGetSchemaWithStats.model_validate(db_link)
+        stats.last_hours_clicks, stats.last_day_clicks, stats.last_week_clicks = (await get_link_stats(db_link, session)).values()
+        schemStats.append(stats)
+    schemStats.sort(key=lambda x: x.last_hours_clicks + x.last_day_clicks + x.last_week_clicks, reverse=True)
+    return schemStats
 
 @privateRouter.get("/{url_key}")
 async def get_my_short_link(
