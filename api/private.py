@@ -18,6 +18,7 @@ privateRouter = APIRouter(
     tags=["link"],
     responses={
         401: {"detail": "Unauthorized"},
+        403: {"detail": "You do not have permission to access this resource"},
         404: {"detail": "Url not found"}
     }
 )
@@ -64,7 +65,7 @@ async def create_short_link(
     return new_link
 
 @privateRouter.get("/status")
-async def get_all_short_link_status(
+async def get_all_me_short_link_status(
         user: UserDep,
         session: SessionDep,
         limit: int = Query(50, ge=0),
@@ -82,7 +83,7 @@ async def get_all_short_link_status(
 
 
 @privateRouter.get("/stats")
-async def get_all_short_link_stats(
+async def get_all_me_short_link_stats(
         user: UserDep,
         session: SessionDep,
         limit: int = Query(50, ge=0),
@@ -97,6 +98,26 @@ async def get_all_short_link_stats(
     )).scalars().all()
 
     return [LinkGetSchemaWithStats.model_validate(db_link) for db_link in db_links]
+
+@privateRouter.get("/{url_key}")
+async def get_my_short_link(
+        url_key: str,
+        user: UserDep,
+        session: SessionDep
+    ) -> LinkGetSchema:
+    """
+    Get a specific short link created by the user.
+    """
+    url_key = url_key.strip().upper()
+    db_link = (await session.execute(
+        select(models.Link).filter(models.Link.link == url_key)
+    )).scalar_one_or_none()
+    if not db_link:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Link not found")
+    elif db_link.owner_id != user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You do not have permission to access this link")
+
+    return LinkGetSchema.model_validate(db_link)
 
 @privateRouter.get("/{url_key}/status")
 async def get_short_link_status(
