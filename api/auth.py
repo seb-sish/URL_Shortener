@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, Response, status
 from fastapi import HTTPException, status
 from schemas import *
 
-from api.dependenses import (
+from api.dependencies import (
     SessionDep, CredentialsDep, UserDep, 
     get_user, authenticate_user, create_user)
 

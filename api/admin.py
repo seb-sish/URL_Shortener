@@ -11,7 +11,7 @@ from schemas.link import LinkGetStatusSchema
 from utils import generate_short_link, check_expired, get_link_stats
 from schemas import *
 
-from api.dependenses import SessionDep, AdminDep
+from api.dependencies import SessionDep, AdminDep
 
 adminRouter = APIRouter(
     prefix="/admin",

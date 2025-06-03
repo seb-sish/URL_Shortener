@@ -6,7 +6,7 @@ from database import models
 from schemas import *
 
 from utils import check_expired
-from api.dependenses import SessionDep
+from api.dependencies import SessionDep
 from utils.links import add_click
 
 publicRouter = APIRouter(
