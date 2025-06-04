@@ -39,7 +39,7 @@ async def add_click(link: models.Link, request: Request, db_session: AsyncSessio
     click = models.Click(
         link_id=link.id,
         user_agent=request.headers.get("User-Agent"),
-        ip=request.client.host
+        ip=request.client.host if request.headers.get("X-Real-IP") is None else request.headers.get("X-Real-IP"),
     )
     db_session.add(click)
     await db_session.commit()
